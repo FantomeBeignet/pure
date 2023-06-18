@@ -132,21 +132,24 @@ prompt_pure_preprompt_render() {
 		preprompt_parts+=('%F{$prompt_pure_colors[git:stash]}${PURE_GIT_STASH_SYMBOL:-≡}%f')
 	fi
 
-	local cleaned_ps1=$PROMPT
-	local -H MATCH MBEGIN MEND
-	if [[ $PROMPT = *$prompt_newline* ]]; then
-		# Remove everything from the prompt until the newline. This
-		# removes the preprompt and only the original PROMPT remains.
-		cleaned_ps1=${PROMPT##*${prompt_newline}}
-	fi
-	unset MATCH MBEGIN MEND
+	local prompt_indicator='%(?.%F{$prompt_pure_colors[prompt:success]}.%F{$prompt_pure_colors[prompt:error]})${prompt_pure_state[prompt]}%f '
+	preprompt_parts+=$prompt_indicator
+
+	# local cleaned_ps1=$PROMPT
+	# local -H MATCH MBEGIN MEND
+	# if [[ $PROMPT = *$prompt_newline* ]]; then
+	# 	# Remove everything from the prompt until the newline. This
+	# 	# removes the preprompt and only the original PROMPT remains.
+	# 	cleaned_ps1=${PROMPT##*${prompt_newline}}
+	# fi
+	# unset MATCH MBEGIN MEND
 
 	# Construct the new prompt with a clean preprompt.
 	local -ah ps1
 	ps1=(
 		${(j. .)preprompt_parts}  # Join parts, space separated.
-		$prompt_newline           # Separate preprompt and prompt.
-		$cleaned_ps1
+		# $prompt_newline           # Separate preprompt and prompt.
+		# $cleaned_ps1
 	)
 
 	PROMPT="${(j..)ps1}"
