@@ -23,44 +23,14 @@
 # \e[K  => clears everything after the cursor on the current line
 # \e[2K => clear everything on the current line
 
-
-# Turns seconds into human readable time.
-# 165392 => 1d 21h 56m 32s
-# https://github.com/sindresorhus/pretty-time-zsh
-prompt_pure_human_time_to_var() {
-	local human total_seconds=$1 var=$2
-	local days=$(( total_seconds / 60 / 60 / 24 ))
-	local hours=$(( total_seconds / 60 / 60 % 24 ))
-	local minutes=$(( total_seconds / 60 % 60 ))
-	local seconds=$(( total_seconds % 60 ))
-	(( days > 0 )) && human+="${days}d "
-	(( hours > 0 )) && human+="${hours}h "
-	(( minutes > 0 )) && human+="${minutes}m "
-	human+="${seconds}s"
-
-	# Store human readable time in a variable as specified by the caller
-	typeset -g "${var}"="${human}"
-}
-
-# Stores (into prompt_pure_cmd_exec_time) the execution
-# time of the last command if set threshold was exceeded.
-prompt_pure_check_cmd_exec_time() {
-	integer elapsed
-	(( elapsed = EPOCHSECONDS - ${prompt_pure_cmd_timestamp:-$EPOCHSECONDS} ))
-	typeset -g prompt_pure_cmd_exec_time=
-	(( elapsed > ${PURE_CMD_MAX_EXEC_TIME:-5} )) && {
-		prompt_pure_human_time_to_var $elapsed "prompt_pure_cmd_exec_time"
-	}
-}
-
 prompt_pure_set_title() {
 	setopt localoptions noshwordsplit
 
 	# Emacs terminal does not support settings the title.
 	(( ${+EMACS} || ${+INSIDE_EMACS} )) && return
 
+	# Don't set title over serial console.
 	case $TTY in
-		# Don't set title over serial console.
 		/dev/ttyS[0-9]*) return;;
 	esac
 
@@ -91,8 +61,6 @@ prompt_pure_preexec() {
 			async_flush_jobs 'prompt_pure'
 		fi
 	fi
-
-	typeset -g prompt_pure_cmd_timestamp=$EPOCHSECONDS
 
 	# Shows the current directory and executed command in the title while a process is active.
 	prompt_pure_set_title 'ignore-escape' "$PWD:t: $2"
@@ -160,9 +128,6 @@ prompt_pure_preprompt_render() {
 		preprompt_parts+=('%F{$prompt_pure_colors[git:stash]}${PURE_GIT_STASH_SYMBOL:-≡}%f')
 	fi
 
-	# Execution time.
-	[[ -n $prompt_pure_cmd_exec_time ]] && preprompt_parts+=('%F{$prompt_pure_colors[execution_time]}${prompt_pure_cmd_exec_time}%f')
-
 	local cleaned_ps1=$PROMPT
 	local -H MATCH MBEGIN MEND
 	if [[ $PROMPT = *$prompt_newline* ]]; then
@@ -199,10 +164,6 @@ prompt_pure_preprompt_render() {
 
 prompt_pure_precmd() {
 	setopt localoptions noshwordsplit
-
-	# Check execution time and store it in a variable.
-	prompt_pure_check_cmd_exec_time
-	unset prompt_pure_cmd_timestamp
 
 	# Shows the full path in the title.
 	prompt_pure_set_title 'expand-prompt' '%~'
@@ -816,7 +777,6 @@ prompt_pure_setup() {
 	# Set the colors.
 	typeset -gA prompt_pure_colors_default prompt_pure_colors
 	prompt_pure_colors_default=(
-		execution_time       yellow
 		git:arrow            cyan
 		git:stash            cyan
 		git:branch           242
