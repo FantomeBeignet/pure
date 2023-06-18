@@ -111,7 +111,7 @@ prompt_pure_preprompt_render() {
 	if [[ -n $prompt_pure_vcs_info[branch] ]]; then
 		preprompt_parts+=('%F{${prompt_pure_colors[path]}}%1~%f')
 	else 
-		preprompt_parts+=('%F{${prompt_pure_colors[path]}}%~%f')
+		preprompt_parts+=('%F{${prompt_pure_colors[path]}}%(3~|%-1~/.../%1~|%~)%f')
 	fi
 
 	# Git branch and dirty status info.
