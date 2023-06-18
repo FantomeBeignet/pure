@@ -784,8 +784,8 @@ prompt_pure_setup() {
 	# Set the colors.
 	typeset -gA prompt_pure_colors_default prompt_pure_colors
 	prompt_pure_colors_default=(
-		git:arrow            cyan
-		git:stash            cyan
+		git:arrow            218
+		git:stash            218
 		git:branch           242
 		git:branch:cached    red
 		git:action           yellow
